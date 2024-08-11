@@ -1,0 +1,12 @@
+{
+  "name": "projects",
+  "version": "1.0.0",
+  "description": "",
+  "main": "html.js",
+  "scripts": {
+    "html": "node html.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>RC Controller</title>
+		<style>
+			:root {
+				--gap: 64px;
+				--button-size: 100px;
+				--text-size: 32px;
+				--radius: 24px;
+			}
+
+			html, body {
+				width: 100%;
+				height: 100%;
+			}
+
+			body {
+				display: flex;
+				gap: var(--gap);
+			}
+
+			div {
+				flex: 1;
+				display: flex;
+				gap: var(--gap);
+				justify-content: center;
+				align-items: center;
+			}
+
+			button {
+				width: var(--button-size);
+				height: var(--button-size);
+				font-size: var(--text-size);
+				border-radius: var(--radius);
+			}
+
+			#left {
+				flex-direction: column;
+			}
+
+			#right {
+				gap: 128px;
+			}
+
+			#space {
+				width: 24px;
+				flex: none;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="left">
+			<button value-in="W=ON" value-out="W=OFF">↑</button>
+			<button value-in="S=ON" value-out="S=OFF">↓</button>
+		</div>
+
+		<div id="right">
+			<button value-in="A=ON" value-out="A=OFF">←</button>
+			<button value-in="D=ON" value-out="D=OFF">→</button>
+		</div>
+
+		<div id="space"></div>
+
+		<script>
+			let allValueOut = [], interval = [];
+
+			const ip = !!location.port ? "http://192.168.1.7" : location.origin;
+			const buttons = document.getElementsByTagName("button");
+
+			for (let i = 0; i < buttons.length; i++) {
+				const btn = buttons.item(i);
+				const valueIn = btn.getAttribute("value-in");
+				const valueOut = btn.getAttribute("value-out");
+
+				allValueOut[i] = valueOut;
+
+				btn.onmousedown = function () {
+					fetchIn();
+					interval[i] = setInterval(fetchIn, 500);
+				};
+
+				btn.onmouseup = function () {
+					allValueOut.map(valOut => fetch(`${ip}/${valOut}`));
+					for (let o = 0; o < interval.length; o++) {
+						clearInterval(interval[o]);
+					}
+				};
+
+				function fetchIn() { fetch(`${ip}/${valueIn}`) };
+				function fetchOut() { fetch(`${ip}/${valueOut}`) };
+			}			
+		</script>
+	</body>
+
+</html>
