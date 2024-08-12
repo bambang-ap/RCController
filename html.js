@@ -1,7 +1,7 @@
 const fs = require('fs')
 
 const ino = fs.readFileSync('./RCController.ino')
-const html = fs.readFileSync('./page.html')
+const html = fs.readFileSync('./page.min.html')
 
 const inoArray = ino.toString().split('\n')
 const startIndex = inoArray.findIndex(p => p.includes('// Start html'))
