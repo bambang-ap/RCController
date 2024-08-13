@@ -19,11 +19,13 @@
 
 			html,
 			body {
+				margin: 0;
 				width: 100%;
 				height: 100%;
 			}
 
 			body {
+				padding-bottom: 32px;
 				display: flex;
 				gap: var(--gap);
 			}
@@ -33,7 +35,7 @@
 				display: flex;
 				gap: var(--gap);
 				justify-content: center;
-				align-items: center;
+				align-items: flex-end;
 			}
 
 			button {
@@ -48,14 +50,6 @@
 				box-shadow: 5px 3px 33px 2px rgba(0, 0, 0, 0.24);
 			}
 
-			#left {
-				flex-direction: column;
-			}
-
-			#right {
-				gap: 128px;
-			}
-
 			#space {
 				width: 24px;
 				flex: none;
@@ -64,32 +58,35 @@
 	</head>
 
 	<body>
+
 		<div id="left">
-			<button value-in="W=ON" value-out="W=OFF">↑</button>
-			<button value-in="S=ON" value-out="S=OFF">↓</button>
+			<button value="A" trigger-id="steer" add-value="-1">←</button>
+			<button value="D" trigger-id="steer" add-value="1">→</button>
 		</div>
 
 		<div id="right">
-			<button value-in="A=ON" value-out="A=OFF">←</button>
-			<button value-in="D=ON" value-out="D=OFF">→</button>
+			<button value="W">↑</button>
+			<button value="S">↓</button>
 		</div>
 
-		<div id="space"></div>
-
 		<script>
+			let allValueOut = [], interval = [], triggerIds = {};
+			
+			const targetVal = 10;
+			const isMobile = navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/Android/i);
 
-			let allValueOut = [], interval = [];
-
-			const isMobile = navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/Android/i)
-
-			const ip = !!location.port ? "http://192.168.1.10" : location.origin;
-			const buttons = document.getElementsByTagName("button");
+			const ip = !!location.port ? `http://192.168.1.10` : location.origin;
+			const buttons = document.getElementsByTagName('button');
 
 			for (let i = 0; i < buttons.length; i++) {
 				const btn = buttons.item(i);
-				const valueIn = btn.getAttribute("value-in");
-				const valueOut = btn.getAttribute("value-out");
+				const value = btn.getAttribute('value');
+				const addValue = btn.getAttribute('add-value');
+				const triggerId = btn.getAttribute('trigger-id');
+				const valueIn = `${value}=ON`
+				const valueOut = `${value}=OFF`
 
+				triggerIds[triggerId] = 0;
 				allValueOut[i] = valueOut;
 
 				if (isMobile) {
@@ -104,6 +101,7 @@
 					fetchIn();
 					interval[i] = setInterval(fetchIn, 500);
 				};
+
 				function eventOut() {
 					allValueOut.map(valOut => fetch(`${ip}/${valOut}`));
 					for (let o = 0; o < interval.length; o++) {
@@ -111,8 +109,16 @@
 					}
 				};
 
-				function fetchIn() { fetch(`${ip}/${valueIn}`) };
-				function fetchOut() { fetch(`${ip}/${valueOut}`) };
+				function fetchIn() {
+					console.log(triggerIds)
+					if (triggerId !== undefined) {
+						triggerIds[triggerId] = triggerIds[triggerId] + parseInt(addValue);
+						if (triggerIds[triggerId] > targetVal || triggerIds[triggerId] < -targetVal) return
+					}
+					fetch(`${ip}/${valueIn}`);
+				};
+
+				function fetchOut() { fetch(`${ip}/${valueOut}`); };
 			}			
 		</script>
 	</body>
