@@ -1,7 +1,7 @@
 const fs = require('fs')
 
-const ino = fs.readFileSync('./RCController.ino')
-const html = fs.readFileSync('./page.html')
+const ino = fs.readFileSync('./HtmlSender.ino')
+const html = fs.readFileSync('./page2.html')
 
 const inoArray = ino.toString().split('\n')
 const startIndex = inoArray.findIndex(p => p.includes('// Start html'))
@@ -13,11 +13,14 @@ const formattedHtml = html
 	.toString()
 	.split('\n')
 	.map(line => {
-		const d = line.replace(/\"/g, "\\\"")
-		// return `\tclient.println("${d}");`
-		return `\tclient.println("${d.slice(0, -1)}");`
+		const d = line
+			.replace(/\"/g, "\\\"")
+			.replace(/\r|\t/g, "")
+		if (!d) return false;
+		return `\tptr += "${d}\\n";`
 	})
+	.filter(Boolean)
 
 const finalScripts = [...start, ...formattedHtml, ...end].join("\n")
 
-fs.writeFileSync('./RCController.ino', finalScripts)
+fs.writeFileSync('./HtmlSender.ino', finalScripts)

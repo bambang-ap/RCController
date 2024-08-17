@@ -1,0 +1,23 @@
+{
+	"[c]": {
+		"editor.defaultFormatter": "ms-vscode.cpptools"
+	},
+	"[cpp]": {
+		"editor.defaultFormatter": "ms-vscode.cpptools"
+	},
+	"editor.formatOnSave": true,
+	"diffEditor.ignoreTrimWhitespace": true,
+	"C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, UseTab: Never, IndentWidth: 2, ColumnLimit: 999, IndentGotoLabels: true, KeepEmptyLinesAtTheStartOfBlocks: true}",
+	"files.associations": {
+		"*.kt": "java",
+		"array": "cpp",
+		"deque": "cpp",
+		"list": "cpp",
+		"string": "cpp",
+		"unordered_map": "cpp",
+		"vector": "cpp",
+		"string_view": "cpp",
+		"initializer_list": "cpp",
+		"ranges": "cpp"
+	}
+}

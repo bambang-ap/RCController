@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="min-width=device-width, initial-scale=1.0">
+		<title>Document</title>
+		<style>
+			:root {
+				--gap: 64px;
+				--button-size: 100px;
+				--text-size: 32px;
+				--radius: 24px;
+			}
+
+			* {
+				user-select: none;
+			}
+
+			html,
+			body {
+				display: flex;
+				flex-direction: column;
+				margin: 0;
+				width: 100%;
+				height: 100%;
+			}
+
+			div {
+				flex: 1;
+				display: flex;
+				gap: var(--gap);
+				justify-content: center;
+				align-items: center;
+			}
+
+			button {
+				min-width: var(--button-size);
+				min-height: var(--button-size);
+				font-size: var(--text-size);
+				border-radius: var(--radius);
+			}
+
+			button:active,
+			button[pressed="true"] {
+				transform: scale(0.9);
+				box-shadow: 5px 3px 33px 2px rgba(0, 0, 0, 0.24);
+				background: rgba(0, 0, 0, 0.2);
+			}
+
+			.flex1 {
+				flex: 1;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div>
+			<button id="toggleBtn" onclick="toggleButton()">Off</button>
+			<button onclick="offAll()">Off All</button>
+		</div>
+
+		<div class="flex1"></div>
+
+		<div id="button-list"></div>
+
+		<script>
+			let toggle = false;
+			let interval = [], status = [];
+
+			const ip = location.origin;
+			const isMobile = navigator.userAgent.match(/iPhone/i) || navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/Android/i);
+
+			const toggledEnabled = ["↑", "↓"];
+			const btnTitles = ["↑", "↓", "←", "→"];
+			const activeBtns = ["W=ON&S=OFF", "W=OFF&S=ON", "A=ON&D=OFF", "A=OFF&D=ON"];
+			const inactiveBtns = ["W=OFF&S=OFF", "W=OFF&S=OFF", "A=OFF&D=OFF", "A=OFF&D=OFF"];
+
+			initiateScript();
+
+			function noop() { };
+
+			function offAll() {
+				upressAll();
+				toggleButton(false);
+				fetch(`${ip}/state?W=OFF&S=OFF&A=OFF&D=OFF`);
+			};
+
+			function toggleButton(toggled) {
+				toggle = toggled === undefined ? !toggle : toggled;
+				document.getElementById("toggleBtn").innerHTML = toggle ? "On" : "Off"
+				initiateScript();;
+			}
+
+			function upressAll() {
+				document.querySelectorAll("#button-list button").forEach(btn => btn.setAttribute("pressed", false));
+				for (let o = 0; o < status.length; o++) {
+					status[o] = false;
+				};
+			};
+
+			function initiateScript() {
+				const btnList = document.getElementById("button-list");
+
+				btnList.innerHTML = "";
+
+				for (let i = 0; i < activeBtns.length; i++) {
+					const activeBtn = activeBtns[i];
+					const inactiveBtn = inactiveBtns[i];
+					const btnTitle = btnTitles[i];
+
+					const btn = document.createElement("button");
+
+					fetchOut();
+
+					if (toggle && toggledEnabled.includes(btnTitle)) {
+						btn.ontouchstart = noop;
+						btn.ontouchend = noop;
+						btn.onmousedown = noop;
+						btn.onmouseup = noop;
+						btn.onclick = () => {
+							upressAll();
+							status[i] = !status[i];
+
+							btn.setAttribute("pressed", status[i]);
+
+							if (status[i]) fetchIn();
+							else fetchOut();
+						};
+					} else {
+						btn.onclick = noop;
+						if (isMobile) {
+							btn.ontouchstart = eventIn;
+							btn.ontouchend = eventOut;
+						} else {
+							btn.onmousedown = eventIn;
+							btn.onmouseup = eventOut;
+						};
+					};
+
+					btn.innerHTML = btnTitle;
+
+					btnList.append(btn);
+
+					function eventIn() {
+						fetchIn();
+						interval[i] = setInterval(fetchIn, 500);
+					};
+
+					function eventOut() {
+						fetchOut();
+						for (let o = 0; o < interval.length; o++) {
+							clearInterval(interval[o]);
+						};
+					};
+
+					function fetchIn() { fetch(`${ip}/state?${activeBtn}`); };
+					function fetchOut() { fetch(`${ip}/state?${inactiveBtn}`); };
+				};
+			};
+		</script>
+	</body>
+
+</html>
